@@ -1,0 +1,15 @@
+name: lint-check
+
+on: push
+
+jobs:
+  run-linters:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install Node.js dependencies
+        run: make install
+
+      - name: Lint
+        run: make lint
