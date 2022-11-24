@@ -8,11 +8,11 @@ const eslintConfig = {
   rules: {
     indent: [4, 'tab'],
   },
-  settings: {
-    'import/resolver': {
-      alias: true,
-    },
-  },
+  // settings: {
+  //   'import/resolver': {
+  //     alias: true,
+  //   },
+  // },
   env: {
     browser: true,
     node: true,
