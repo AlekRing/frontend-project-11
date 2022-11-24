@@ -6,18 +6,14 @@ const eslintConfig = {
   ],
   parser: '@babel/eslint-parser',
   rules: {
-    indent: [4, 'tab'],
+    indent: [1, 'tab'],
+    allowIndentationTabs: true,
   },
-  // settings: {
-  //   'import/resolver': {
-  //     alias: true,
-  //   },
-  // },
   env: {
     browser: true,
     node: true,
   },
-  // exclude: ['node_modules'],
+  exclude: ['node_modules'],
 };
 
 module.exports = eslintConfig;
