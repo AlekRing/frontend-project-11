@@ -141,7 +141,7 @@ const App = () => {
 					}, timeout);
 				})
 				.catch((error) => {
-					console.warn(error);
+					console.error(error);
 					state.status.error = error.message;
 					renderStatus(state.status, i18nextInstance);
 					input.classList.add('is-invalid');
