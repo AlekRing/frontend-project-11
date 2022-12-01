@@ -1,8 +1,6 @@
 export default {
     translation: {
-      loading: {
-        success: 'Rss has been loaded',
-      },
+      success: 'Rss has been loaded',
       errors: {
         exists: 'Rss already exists',
         required: 'Required',

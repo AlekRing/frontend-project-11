@@ -7,28 +7,24 @@ import resources from './locales/index';
 import locale from './locales/yupLocale';
 import axios from 'axios';
 import { hashString } from './utilities';
-import renderContent from './renderContent.js';
+import renderContent, { renderStatus } from './renderContent.js';
 
 let link = string().url().required();
 
 const fetchRSS = (url) => axios.get(`https://allorigins.hexlet.app/get?url=${encodeURIComponent(url)}`)
     .then((response => response))
-    .catch((error) => error);
+    .catch((error) => new Error('network'));
 
 const parseContent = (rowData) => {
-    if (!rowData?.data?.contents) throw new Error('Invalid row data');
+    if (!rowData?.data?.contents) throw new Error('unknown');
 
     const parser = new DOMParser();
 
     const dom = parser.parseFromString(rowData.data.contents, 'text/xml');
 
     const parseError = dom.querySelector('parsererror');
-    if (parseError) {
-        const error = new Error(parseError.textContent);
-        error.isParsingError = true;
-        error.data = rowData;
-        throw error;
-    }
+
+    if (parseError) throw new Error('noRss');
 
     const channelTitle = dom.querySelector('channel > title')?.textContent;
     const channelDescription = dom.querySelector('channel > description')?.textContent;
@@ -45,14 +41,18 @@ const parseContent = (rowData) => {
     return { title: channelTitle, description: channelDescription, items };
 };
 
-const updateState = ({streams, currentStream}, parsedContent) => {
-    if (!parsedContent) throw new Error('No content to update the state was provided');
+const updateState = (state, parsedContent) => {
+    if (!parsedContent) {
+        state.status.error = 'unknown';
+        throw new Error('unknown')
+    };
 
-    const {url, hash} = currentStream;
-    const stream = streams.rssStreams[hash];
+    const {url, hash} = state.currentStream;
+    const stream = state.streams.rssStreams[hash];
 
     if (!stream) {
-        streams.rssStreams[hash] = {...parsedContent, url: url};
+        state.status.success = 'success';
+        state.streams.rssStreams[hash] = {...parsedContent, url: url};
         return;
     }
 
@@ -77,7 +77,11 @@ const App = () => {
             modalUI: {
                 modal: document.getElementById('modal'),
             }
-        }
+        },
+        status: {
+            success: '',
+            error: '',
+        },
     };
     const timeout = 5000;
     const form = document.querySelector('.rss-form');
@@ -113,10 +117,6 @@ const App = () => {
             link.validate(url)
             .then(fetchRSS)
             .then(parseContent)
-            .catch((error) => {
-                console.error(error);
-                input.classList.add('is-invalid');
-            });
 
         const updateFeeds = (state, i18nextInstance) => {
             const streams = Object.values(state.streams.rssStreams);
@@ -142,6 +142,12 @@ const App = () => {
                     state.timeoutId = setTimeout(() => {
                         updateFeeds(state, i18nextInstance);
                     }, timeout);
+                })
+                .catch((error) => {
+                    console.warn(error);
+                    state.status.error = error.message;
+                    renderStatus(state.status, i18nextInstance);
+                    input.classList.add('is-invalid');
                 });
         };
 
@@ -152,6 +158,11 @@ const App = () => {
                 clearTimeout(state.timeoutId);
                 state.timeoutId = null;
             };
+
+            state.status = {
+                success: '',
+                error: '',
+            };
     
             const data = new FormData(e.target);
             const url = data.get('url');
@@ -161,7 +172,8 @@ const App = () => {
             state.currentStream.hash = hash;
 
             if (state.streams.rssStreams[hash]) {
-                console.error('Error: strem already exists');
+                state.status.error = 'exists';
+                renderStatus(state.status, i18nextInstance);
                 return;
             }
             
@@ -178,11 +190,14 @@ const App = () => {
                     updateFeeds(state, i18nextInstance);
                 }, timeout);
             })
-            .catch((err) => console.error(err));
+            .catch((error) => {
+                console.warn(error);
+                state.status.error = error.message;
+                renderStatus(state.status, i18nextInstance);
+                input.classList.add('is-invalid');
+            });
         });
     });
-
-    return 'Hello, world!';
 };
 
 export default App;

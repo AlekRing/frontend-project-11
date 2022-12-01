@@ -100,7 +100,24 @@ const renderPosts = (currentPosts, readPosts, modalState, i18nextInstance) => {
 	listBox.appendChild(fragmentStructure);
 };
 
-const renderContent = ({ streams, currentStream, modalState }, i18nextInstance) => {
+export const renderStatus = (status, {t}) => {
+	const feedBack = document.querySelector('.feedback');
+
+	// console.log(status);
+
+	if (status.success) {
+		feedBack.textContent = t(status.success);
+		feedBack.classList.remove('text-danger');
+		feedBack.classList.add('text-success');
+		return;
+	}
+
+	feedBack.textContent = t(`errors.${status.error}`);
+	feedBack.classList.remove('text-success');
+	feedBack.classList.add('text-danger');
+};
+
+const renderContent = ({ streams, currentStream, modalState, status }, i18nextInstance) => {
 	const { hash } = currentStream;
 	const { rssStreams, readPosts } = streams;
 	const allStreams = Object.values(rssStreams);
@@ -108,6 +125,7 @@ const renderContent = ({ streams, currentStream, modalState }, i18nextInstance) 
 
 	renderFeeds(allStreams, i18nextInstance);
 	renderPosts(currentPosts, readPosts, modalState, i18nextInstance);
+	renderStatus(status, i18nextInstance);
 };
 
 export default renderContent;

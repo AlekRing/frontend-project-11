@@ -1,8 +1,6 @@
 export default {
     translation: {
-      loading: {
-        success: 'RSS успешно загружен',
-      },
+      success: 'RSS успешно загружен',
       errors: {
         exists: 'RSS уже существует',
         required: 'Не должно быть пустым',
