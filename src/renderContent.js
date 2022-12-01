@@ -100,7 +100,7 @@ const renderPosts = (currentPosts, readPosts, modalState, i18nextInstance) => {
 	listBox.appendChild(fragmentStructure);
 };
 
-export const renderStatus = (status, {t}) => {
+export const renderStatus = (status, { t }) => {
 	const feedBack = document.querySelector('.feedback');
 
 	// console.log(status);
