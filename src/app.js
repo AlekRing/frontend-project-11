@@ -121,8 +121,6 @@ const App = () => {
 			const streams = Object.values(state.streams.rssStreams);
 			let activeIndex = 0;
 
-			console.warn('state: ', state);
-
 			const promises = streams.map((stream, index) => {
 				if (stream.url === state.currentStream.url) activeIndex = index;
 				return prepareData(stream.url);
@@ -190,7 +188,7 @@ const App = () => {
 					}, timeout);
 				})
 				.catch((error) => {
-					console.warn(error);
+					console.error(error);
 					state.status.error = error.message;
 					renderStatus(state.status, i18nextInstance);
 					input.classList.add('is-invalid');
