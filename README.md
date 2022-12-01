@@ -4,5 +4,13 @@
 
 #RSS
 
+### Setup:
+    * clone project
+    * make install
+
+## System requirements
+* NodeJS >= 12 <= 18
+* NPM >= 6.x
+* Make
 
 Vercel: https://frontend-project-11-alpha.vercel.app/
