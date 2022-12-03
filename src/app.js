@@ -16,15 +16,19 @@ const fetchRSS = (url) => axios.get(`https://allorigins.hexlet.app/get?url=${enc
 	.catch((error) => new Error('network'));
 
 const parseContent = (rowData) => {
-	if (!rowData?.data?.contents) throw new Error('unknown');
+	// if (!rowData?.data?.contents) throw new Error('unknown');
 
+	console.log(rowData);
 	const parser = new DOMParser();
 
 	const dom = parser.parseFromString(rowData.data.contents, 'text/xml');
 
 	const parseError = dom.querySelector('parsererror');
 
-	if (parseError) throw new Error('noRss');
+	if (parseError) {
+		console.log(parseError);
+		throw new Error('noRss');
+	}
 
 	const channelTitle = dom.querySelector('channel > title')?.textContent;
 	const channelDescription = dom.querySelector('channel > description')?.textContent;
@@ -88,21 +92,11 @@ const App = () => {
 	const input = form.querySelector('#url-input');
 	const { modalState } = state;
 
-	state.modalState.modalUI.modalTitle = modalState.modalUI.modal.querySelector('.modal-title');
-	state.modalState.modalUI.modalText = modalState.modalUI.modal.querySelector('.text-break');
-	state.modalState.modalUI.modalButton = modalState.modalUI.modal.querySelector('.btn-primary');
-	state.modalState.modalUI.closeBtn = modalState.modalUI.modal.querySelector('.btn-secondary');
-	state.modalState.modalUI.closeBtnSecond = modalState.modalUI.modal.querySelector('.btn-close');
-
-	yup.setLocale({
-		string: {
-			url: () => ({ key: 'notUrl' }),
-		},
-		mixed: {
-			required: () => ({ key: 'required' }),
-			notOneOf: () => ({ key: 'exists' }),
-		},
-	});
+	modalState.modalUI.modalTitle = modalState.modalUI.modal.querySelector('.modal-title');
+	modalState.modalUI.modalText = modalState.modalUI.modal.querySelector('.text-break');
+	modalState.modalUI.modalButton = modalState.modalUI.modal.querySelector('.btn-primary');
+	modalState.modalUI.closeBtn = modalState.modalUI.modal.querySelector('.btn-secondary');
+	modalState.modalUI.closeBtnSecond = modalState.modalUI.modal.querySelector('.btn-close');
 
 	const i18nextInstance = i18next.createInstance();
 
@@ -112,41 +106,6 @@ const App = () => {
 		resources,
 	}).then(() => {
 		yup.setLocale(locale);
-
-		const prepareData = (url) => link.validate(url)
-			.then(fetchRSS)
-			.then(parseContent);
-
-		const updateFeeds = (state, i18nextInstance) => {
-			const streams = Object.values(state.streams.rssStreams);
-			let activeIndex = 0;
-
-			const promises = streams.map((stream, index) => {
-				if (stream.url === state.currentStream.url) activeIndex = index;
-				return prepareData(stream.url);
-			});
-			Promise.all(promises)
-				.then((values) => values.forEach((val, ind) => {
-					if (ind === activeIndex) updateState(state, val);
-					renderContent(state, i18nextInstance);
-				}))
-				.then(() => {
-					if (state.timeoutId !== null) {
-						clearTimeout(state.timeoutId);
-						state.timeoutId = null;
-					}
-
-					state.timeoutId = setTimeout(() => {
-						updateFeeds(state, i18nextInstance);
-					}, timeout);
-				})
-				.catch((error) => {
-					console.error(error);
-					state.status.error = error.message;
-					renderStatus(state.status, i18nextInstance);
-					input.classList.add('is-invalid');
-				});
-		};
 
 		form.addEventListener('submit', (e) => {
 			e.preventDefault();
@@ -174,25 +133,74 @@ const App = () => {
 				return;
 			}
 
-			prepareData(url)
-				.then((parsed) => {
-					updateState(state, parsed);
-					renderContent(state, i18nextInstance);
-					form.reset();
-					input.focus();
-					input.classList.remove('is-invalid');
-				})
-				.then(() => {
-					state.timeoutId = setTimeout(() => {
-						updateFeeds(state, i18nextInstance);
-					}, timeout);
-				})
-				.catch((error) => {
-					console.error(error);
-					state.status.error = error.message;
-					renderStatus(state.status, i18nextInstance);
-					input.classList.add('is-invalid');
-				});
+			const prepareData = (url) => link.validate(url)
+				.then(fetchRSS)
+				.then(parseContent);
+
+			const updateFeeds = (state, i18nextInstance) => {
+				const streams = Object.values(state.streams.rssStreams);
+				const promises = [];
+				let activeIndex = 0;
+
+				console.warn('updateFeeds Check: ', state.currentStream.url, 'STATE: ', state, 'streams: ', streams);
+
+				if (!streams.length && state.currentStream.url) {
+					promises.push(prepareData(state.currentStream.url));
+				} else if (streams.length) {
+					streams.forEach((stream, index) => {
+						if (stream.url === state.currentStream.url) activeIndex = index;
+						promises.push(prepareData(stream.url));
+					});
+				}
+
+				Promise.all(promises)
+					.then((values) => values.forEach((val, ind) => {
+						if (ind === activeIndex) updateState(state, val);
+						renderContent(state, i18nextInstance);
+					}))
+					.then(() => {
+						if (state.timeoutId !== null) {
+							clearTimeout(state.timeoutId);
+							state.timeoutId = null;
+						}
+
+						state.timeoutId = setTimeout(() => {
+							updateFeeds(state, i18nextInstance);
+						}, timeout);
+					})
+					.catch((error) => {
+						console.error(error);
+						state.status.error = error.message;
+						renderStatus(state.status, i18nextInstance);
+						input.classList.add('is-invalid');
+					});
+			};
+
+			updateFeeds(state, i18nextInstance);
+
+			form.reset();
+			input.focus();
+			input.classList.remove('is-invalid');
+
+			// prepareData(url)
+			// 	.then((parsed) => {
+			// 		updateState(state, parsed);
+			// 		renderContent(state, i18nextInstance);
+			// 		form.reset();
+			// 		input.focus();
+			// 		input.classList.remove('is-invalid');
+			// 	})
+			// 	.then(() => {
+			// 		state.timeoutId = setTimeout(() => {
+			// 			updateFeeds(state, i18nextInstance);
+			// 		}, timeout);
+			// 	})
+			// 	.catch((error) => {
+			// 		console.error(error);
+			// 		state.status.error = error.message;
+			// 		renderStatus(state.status, i18nextInstance);
+			// 		input.classList.add('is-invalid');
+			// 	});
 		});
 	});
 };
