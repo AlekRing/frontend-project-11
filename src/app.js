@@ -18,17 +18,13 @@ const fetchRSS = (url) => axios.get(`https://allorigins.hexlet.app/get?url=${enc
 const parseContent = (rowData) => {
 	// if (!rowData?.data?.contents) throw new Error('unknown');
 
-	console.log(rowData);
 	const parser = new DOMParser();
 
 	const dom = parser.parseFromString(rowData.data.contents, 'text/xml');
 
 	const parseError = dom.querySelector('parsererror');
 
-	if (parseError) {
-		console.log(parseError);
-		throw new Error('noRss');
-	}
+	if (parseError) throw new Error('noRss');
 
 	const channelTitle = dom.querySelector('channel > title')?.textContent;
 	const channelDescription = dom.querySelector('channel > description')?.textContent;
@@ -107,6 +103,50 @@ const App = () => {
 	}).then(() => {
 		yup.setLocale(locale);
 
+		const prepareData = (url) => link.validate(url)
+			.then(fetchRSS)
+			.then(parseContent);
+
+		const updateFeeds = (mainState, i18nextInstance) => {
+			const streams = Object.values(mainState.streams.rssStreams);
+			const promises = [];
+			let activeIndex = 0;
+
+			// console.warn('updateFeeds Check: ', mainState.currentStream.url, 'mainSTATE: ', mainState, 'streams: ', streams);
+			console.warn(!streams.length && !!mainState.currentStream.url, streams.length);
+
+			if (!streams.length && mainState.currentStream.url) {
+				promises.push(prepareData(mainState.currentStream.url));
+			} else if (streams.length) {
+				streams.forEach((stream, index) => {
+					if (stream.url === mainState.currentStream.url) activeIndex = index;
+					promises.push(prepareData(stream.url));
+				});
+			}
+
+			Promise.all(promises)
+				.then((values) => values.forEach((val, ind) => {
+					if (ind === activeIndex) updateState(mainState, val);
+					renderContent(mainState, i18nextInstance);
+				}))
+				.then(() => {
+					if (mainState.timeoutId !== null) {
+						clearTimeout(mainState.timeoutId);
+						mainState.timeoutId = null;
+					}
+
+					mainState.timeoutId = setTimeout(() => {
+						updateFeeds(mainState, i18nextInstance);
+					}, timeout);
+				})
+				.catch((error) => {
+					console.error(error);
+					mainState.status.error = error.message;
+					renderStatus(mainState.status, i18nextInstance);
+					input.classList.add('is-invalid');
+				});
+		};
+
 		form.addEventListener('submit', (e) => {
 			e.preventDefault();
 
@@ -133,74 +173,31 @@ const App = () => {
 				return;
 			}
 
-			const prepareData = (url) => link.validate(url)
-				.then(fetchRSS)
-				.then(parseContent);
+			// updateFeeds(state, i18nextInstance);
 
-			const updateFeeds = (state, i18nextInstance) => {
-				const streams = Object.values(state.streams.rssStreams);
-				const promises = [];
-				let activeIndex = 0;
+			// form.reset();
+			// input.focus();
+			// input.classList.remove('is-invalid');
 
-				console.warn('updateFeeds Check: ', state.currentStream.url, 'STATE: ', state, 'streams: ', streams);
-
-				if (!streams.length && state.currentStream.url) {
-					promises.push(prepareData(state.currentStream.url));
-				} else if (streams.length) {
-					streams.forEach((stream, index) => {
-						if (stream.url === state.currentStream.url) activeIndex = index;
-						promises.push(prepareData(stream.url));
-					});
-				}
-
-				Promise.all(promises)
-					.then((values) => values.forEach((val, ind) => {
-						if (ind === activeIndex) updateState(state, val);
-						renderContent(state, i18nextInstance);
-					}))
-					.then(() => {
-						if (state.timeoutId !== null) {
-							clearTimeout(state.timeoutId);
-							state.timeoutId = null;
-						}
-
-						state.timeoutId = setTimeout(() => {
-							updateFeeds(state, i18nextInstance);
-						}, timeout);
-					})
-					.catch((error) => {
-						console.error(error);
-						state.status.error = error.message;
-						renderStatus(state.status, i18nextInstance);
-						input.classList.add('is-invalid');
-					});
-			};
-
-			updateFeeds(state, i18nextInstance);
-
-			form.reset();
-			input.focus();
-			input.classList.remove('is-invalid');
-
-			// prepareData(url)
-			// 	.then((parsed) => {
-			// 		updateState(state, parsed);
-			// 		renderContent(state, i18nextInstance);
-			// 		form.reset();
-			// 		input.focus();
-			// 		input.classList.remove('is-invalid');
-			// 	})
-			// 	.then(() => {
-			// 		state.timeoutId = setTimeout(() => {
-			// 			updateFeeds(state, i18nextInstance);
-			// 		}, timeout);
-			// 	})
-			// 	.catch((error) => {
-			// 		console.error(error);
-			// 		state.status.error = error.message;
-			// 		renderStatus(state.status, i18nextInstance);
-			// 		input.classList.add('is-invalid');
-			// 	});
+			prepareData(url)
+				.then((parsed) => {
+					updateState(state, parsed);
+					renderContent(state, i18nextInstance);
+					form.reset();
+					input.focus();
+					input.classList.remove('is-invalid');
+				})
+				.then(() => {
+					state.timeoutId = setTimeout(() => {
+						updateFeeds(state, i18nextInstance);
+					}, timeout);
+				})
+				.catch((error) => {
+					console.error(error);
+					state.status.error = error.message;
+					renderStatus(state.status, i18nextInstance);
+					input.classList.add('is-invalid');
+				});
 		});
 	});
 };
