@@ -117,14 +117,16 @@ export const renderStatus = (status, { t }) => {
 	feedBack.classList.add('text-danger');
 };
 
-const renderContent = ({ streams, currentStream, modalState, status }, i18nextInstance) => {
-	const { hash } = currentStream;
+const renderContent = ({ streams, modalState, status }, i18nextInstance) => {
 	const { rssStreams, readPosts } = streams;
-	const allStreams = Object.values(rssStreams);
-	const currentPosts = Object.entries(rssStreams[hash].items);
+	const streamsValues = Object.values(rssStreams);
+	const allStreams = streamsValues;
+	const posts = [];
+
+	streamsValues.forEach((stream) => posts.push(...Object.entries(stream.items)));
 
 	renderFeeds(allStreams, i18nextInstance);
-	renderPosts(currentPosts, readPosts, modalState, i18nextInstance);
+	renderPosts(posts, readPosts, modalState, i18nextInstance);
 	renderStatus(status, i18nextInstance);
 };
 

@@ -16,12 +16,10 @@ const fetchRSS = (url) => axios.get(`https://allorigins.hexlet.app/get?url=${enc
 	.catch((error) => new Error('network'));
 
 const parseContent = (rowData) => {
-	// if (!rowData?.data?.contents) throw new Error('unknown');
+	if (!rowData?.data?.contents) throw new Error('unknown');
 
 	const parser = new DOMParser();
-
 	const dom = parser.parseFromString(rowData.data.contents, 'text/xml');
-
 	const parseError = dom.querySelector('parsererror');
 
 	if (parseError) throw new Error('noRss');
@@ -112,17 +110,12 @@ const App = () => {
 			const promises = [];
 			let activeIndex = 0;
 
-			// console.warn('updateFeeds Check: ', mainState.currentStream.url, 'mainSTATE: ', mainState, 'streams: ', streams);
-			console.warn(!streams.length && !!mainState.currentStream.url, streams.length);
+			console.warn(mainState);
 
-			if (!streams.length && mainState.currentStream.url) {
-				promises.push(prepareData(mainState.currentStream.url));
-			} else if (streams.length) {
-				streams.forEach((stream, index) => {
-					if (stream.url === mainState.currentStream.url) activeIndex = index;
-					promises.push(prepareData(stream.url));
-				});
-			}
+			streams.forEach((stream, index) => {
+				if (stream.url === mainState.currentStream.url) activeIndex = index;
+				promises.push(prepareData(stream.url));
+			});
 
 			Promise.all(promises)
 				.then((values) => values.forEach((val, ind) => {
@@ -150,11 +143,6 @@ const App = () => {
 		form.addEventListener('submit', (e) => {
 			e.preventDefault();
 
-			if (state.timeoutId !== null) {
-				clearTimeout(state.timeoutId);
-				state.timeoutId = null;
-			}
-
 			state.status = {
 				success: '',
 				error: '',
@@ -162,10 +150,8 @@ const App = () => {
 
 			const data = new FormData(e.target);
 			const url = data.get('url');
-			state.currentStream.url = url;
 
-			const hash = hashString(state.currentStream.url);
-			state.currentStream.hash = hash;
+			const hash = hashString(url);
 
 			if (state.streams.rssStreams[hash]) {
 				state.status.error = 'exists';
@@ -173,21 +159,22 @@ const App = () => {
 				return;
 			}
 
-			// updateFeeds(state, i18nextInstance);
-
-			// form.reset();
-			// input.focus();
-			// input.classList.remove('is-invalid');
-
 			prepareData(url)
 				.then((parsed) => {
-					updateState(state, parsed);
-					renderContent(state, i18nextInstance);
+					state.currentStream.hash = hash;
+					state.currentStream.url = url;
 					form.reset();
 					input.focus();
 					input.classList.remove('is-invalid');
-				})
-				.then(() => {
+
+					updateState(state, parsed);
+					renderContent(state, i18nextInstance);
+
+					if (state.timeoutId !== null) {
+						clearTimeout(state.timeoutId);
+						state.timeoutId = null;
+					}
+
 					state.timeoutId = setTimeout(() => {
 						updateFeeds(state, i18nextInstance);
 					}, timeout);

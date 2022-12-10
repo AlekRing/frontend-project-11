@@ -53,6 +53,6 @@ module.exports = {
 		compress: true,
 		port: process.env.PORT || 3000,
 		historyApiFallback: true,
-		open: true,
+		// open: true,
 	},
 };
