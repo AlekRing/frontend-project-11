@@ -16,7 +16,7 @@ const fetchRSS = (url) => axios.get(`https://allorigins.hexlet.app/get?url=${enc
 	.catch((error) => new Error('network'));
 
 const parseContent = (rowData) => {
-	if (!rowData?.data?.contents) throw new Error('unknown');
+	// if (!rowData?.data?.contents) throw new Error('unknown');
 
 	const parser = new DOMParser();
 	const dom = parser.parseFromString(rowData.data.contents, 'text/xml');
@@ -40,7 +40,7 @@ const parseContent = (rowData) => {
 };
 
 const updateState = (state, parsedContent, url, hash) => {
-	// if (!parsedContent) throw new Error('unknown');
+	if (!parsedContent) throw new Error('unknown');
 
 	const stream = state.streams.rssStreams[hash];
 
