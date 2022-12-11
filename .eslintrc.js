@@ -15,6 +15,8 @@ const eslintConfig = {
 		'no-param-reassign': 0,
 		'no-bitwise': 0,
 		'no-plusplus': 0,
+		'max-len': ['warn', 130],
+		'consistent-return': 'warn',
 	},
 	env: {
 		browser: true,

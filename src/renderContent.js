@@ -34,10 +34,15 @@ const renderFeeds = (allStreams, i18nextInstance) => {
 };
 
 const renderPosts = (currentPosts, readPosts, modalState, i18nextInstance) => {
-	const { isInitiated, modalUI } = modalState;
 	const {
-		modal, modalTitle, modalText, modalButton, closeBtn, closeBtnSecond,
-	} = modalUI;
+		isInitiated,
+		modal,
+		modalTitle,
+		modalText,
+		modalButton,
+		closeBtn,
+		closeBtnSecond,
+	} = modalState;
 
 	const listBox = document.querySelector('.posts');
 	const fragmentStructure = document.createElement('div');
@@ -117,7 +122,7 @@ export const renderStatus = (status, { t }) => {
 	feedBack.classList.add('text-danger');
 };
 
-const renderContent = ({ streams, modalState, status }, i18nextInstance) => {
+const renderContent = ({ streams, ui, status }, i18nextInstance) => {
 	const { rssStreams, readPosts } = streams;
 	const streamsValues = Object.values(rssStreams);
 	const allStreams = streamsValues;
@@ -126,7 +131,7 @@ const renderContent = ({ streams, modalState, status }, i18nextInstance) => {
 	streamsValues.forEach((stream) => posts.push(...Object.entries(stream.items)));
 
 	renderFeeds(allStreams, i18nextInstance);
-	renderPosts(posts, readPosts, modalState, i18nextInstance);
+	renderPosts(posts, readPosts, ui.modalUI, i18nextInstance);
 	renderStatus(status, i18nextInstance);
 };
 
