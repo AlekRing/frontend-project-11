@@ -40,7 +40,7 @@ const parseContent = (rowData) => {
 };
 
 const updateState = (state, parsedContent, url, hash) => {
-	if (!parsedContent) throw new Error('unknown');
+	// if (!parsedContent) throw new Error('unknown');
 
 	const stream = state.streams.rssStreams[hash];
 
