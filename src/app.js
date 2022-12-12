@@ -1,11 +1,9 @@
 import 'bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import i18next from 'i18next';
-import * as yup from 'yup';
 import { string } from 'yup';
 import axios from 'axios';
 import resources from './locales/index';
-import locale from './locales/yupLocale';
 import { getLink, hashString } from './utilities';
 import renderContent, { renderStatus } from './renderContent';
 
@@ -96,8 +94,6 @@ const App = (state) => {
 		debug: false,
 		resources,
 	}).then(() => {
-		yup.setLocale(locale);
-
 		form.addEventListener('submit', (e) => {
 			e.preventDefault();
 
@@ -139,7 +135,8 @@ const App = (state) => {
 						updateFeeds(state, i18nextInstance, handleError);
 					}, state.timeout);
 				})
-				.catch((error) => handleError(error));
+				.catch((error) => (error.message === 'this must be a valid URL'
+					? handleError(new Error('notUrl')) : handleError(error)));
 		});
 	});
 };
