@@ -4,9 +4,9 @@ export default {
 		errors: {
 			exists: 'Rss already exists',
 			required: 'Required',
-			notUrl: 'Must be valid url',
+			'this must be a valid URL': 'Must be valid url',
 			noRss: 'This source doesn\'t contain valid rss',
-			network: 'Network error',
+			'Network Error': 'Network error',
 			unknown: 'Something went wrong',
 		},
 		feeds: 'Feeds',

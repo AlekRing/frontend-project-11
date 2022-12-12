@@ -9,9 +9,7 @@ import renderContent, { renderStatus } from './renderContent';
 
 const link = string().url().required();
 
-const fetchRSS = (url) => axios.get(getLink(url))
-	.then(((response) => response))
-	.catch((error) => new Error('network'));
+const fetchRSS = (url) => axios.get(getLink(url)).then(((response) => response));
 
 const parseContent = (rowData) => {
 	if (!rowData?.data?.contents) throw new Error('unknown');
@@ -58,8 +56,6 @@ const updateFeeds = (state, i18nextInstance, handleError) => {
 	const streamsHashes = Object.keys(state.streams.rssStreams);
 	const promises = streams.map((stream) => fetchRSS(stream.url).then(parseContent));
 
-	console.warn(state);
-
 	Promise.all(promises)
 		.then((values) => values.forEach((val, ind) => {
 			updateState(state, val, val.url, streamsHashes[ind]);
@@ -73,7 +69,7 @@ const updateFeeds = (state, i18nextInstance, handleError) => {
 
 			state.timeoutId = setTimeout(updateFeeds, state.timeout, state, i18nextInstance, handleError);
 		})
-		.catch((error) => handleError(error));
+		.catch(handleError);
 };
 
 const App = (state) => {
@@ -107,8 +103,9 @@ const App = (state) => {
 
 			const handleError = (error) => {
 				console.error(error);
-				form.reset();
+
 				state.status.error = error.message;
+				form.reset();
 				renderStatus(state.status, i18nextInstance);
 				state.ui.input.classList.add('is-invalid');
 			};
@@ -135,8 +132,7 @@ const App = (state) => {
 						updateFeeds(state, i18nextInstance, handleError);
 					}, state.timeout);
 				})
-				.catch((error) => (error.message === 'this must be a valid URL'
-					? handleError(new Error('notUrl')) : handleError(error)));
+				.catch(handleError);
 		});
 	});
 };

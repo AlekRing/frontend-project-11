@@ -4,9 +4,9 @@ export default {
 		errors: {
 			exists: 'RSS уже существует',
 			required: 'Не должно быть пустым',
-			notUrl: 'Ссылка должна быть валидным URL',
+			'this must be a valid URL': 'Ссылка должна быть валидным URL',
 			noRss: 'Ресурс не содержит валидный RSS',
-			network: 'Ошибка сети',
+			'Network Error': 'Ошибка сети',
 			unknown: 'Неизвестная ошибка. Что-то пошло не так.',
 		},
 		feeds: 'Фиды',
