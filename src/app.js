@@ -6,12 +6,12 @@ import { string } from 'yup';
 import axios from 'axios';
 import resources from './locales/index';
 import locale from './locales/yupLocale';
-import { hashString } from './utilities';
+import { getLink, hashString } from './utilities';
 import renderContent, { renderStatus } from './renderContent';
 
 const link = string().url().required();
 
-const fetchRSS = (url) => axios.get(`https://allorigins.hexlet.app/get?url=${encodeURIComponent(url)}`)
+const fetchRSS = (url) => axios.get(getLink(url))
 	.then(((response) => response))
 	.catch((error) => new Error('network'));
 

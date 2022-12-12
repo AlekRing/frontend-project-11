@@ -128,7 +128,7 @@ const renderContent = ({ streams, ui, status }, i18nextInstance) => {
 	const allStreams = streamsValues;
 	const posts = [];
 
-	for (let i = streamsValues.length; i > 0; i--) {
+	for (let i = streamsValues.length - 1; i >= 0; i--) {
 		posts.push(...Object.entries(streamsValues[i].items));
 	}
 

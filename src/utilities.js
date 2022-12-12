@@ -14,3 +14,9 @@ export const hashString = (str) => {
 
 	return hash;
 };
+
+export const getLink = (url) => {
+	const newUrl = new URL(`https://allorigins.hexlet.app/get?url=${url}`);
+	newUrl.searchParams.set('disableCache', true);
+	return newUrl.toString();
+};
