@@ -128,7 +128,9 @@ const renderContent = ({ streams, ui, status }, i18nextInstance) => {
 	const allStreams = streamsValues;
 	const posts = [];
 
-	streamsValues.forEach((stream) => posts.push(...Object.entries(stream.items)));
+	for (let i = streamsValues.length; i > 0; i--) {
+		posts.push(...Object.entries(streamsValues[i].items));
+	}
 
 	renderFeeds(allStreams, i18nextInstance);
 	renderPosts(posts, readPosts, ui.modalUI, i18nextInstance);

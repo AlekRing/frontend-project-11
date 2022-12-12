@@ -16,7 +16,7 @@ const fetchRSS = (url) => axios.get(`https://allorigins.hexlet.app/get?url=${enc
 	.catch((error) => new Error('network'));
 
 const parseContent = (rowData) => {
-	// if (!rowData?.data?.contents) throw new Error('unknown');
+	if (!rowData?.data?.contents) throw new Error('unknown');
 
 	const parser = new DOMParser();
 	const dom = parser.parseFromString(rowData.data.contents, 'text/xml');
@@ -111,6 +111,7 @@ const App = (state) => {
 
 			const handleError = (error) => {
 				console.error(error);
+				form.reset();
 				state.status.error = error.message;
 				renderStatus(state.status, i18nextInstance);
 				state.ui.input.classList.add('is-invalid');
