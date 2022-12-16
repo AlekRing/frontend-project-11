@@ -4,7 +4,12 @@ import i18next from 'i18next';
 import { string } from 'yup';
 import axios from 'axios';
 import resources from './locales/index';
-import { getLink, hashString, isAlreadyExists, validateUrl } from './utilities';
+import {
+  getLink,
+  hashString,
+  isAlreadyExists,
+  validateUrl,
+} from './utilities';
 import renderContent, { renderFormFeedback } from './renderContent';
 
 const fetchRSS = (url) => axios.get(getLink(url)).then(((response) => response));
@@ -27,7 +32,12 @@ const parseContent = (rawData) => {
     const itemLink = val.querySelector('link')?.textContent;
     const description = val.querySelector('description')?.textContent;
 
-    return { id: hashString(title), title, link: itemLink, description };
+    return {
+      id: hashString(title),
+      title,
+      link: itemLink,
+      description,
+    };
   });
 
   return { feed: { title: channelTitle, description: channelDescription }, posts };
