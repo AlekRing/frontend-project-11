@@ -2,19 +2,16 @@ import app from './app';
 
 (function start() {
   const state = {
-    timeoutId: null,
     timeout: 5000,
-    streams: {
+    rssStreams: {
       readPosts: new Set(),
-      rssStreams: {},
+      feeds: [],
+      posts: [],
     },
-    ui: {
-      modalUI: {
-        isInitiated: false,
-        modal: document.getElementById('modal'),
-      },
-    },
-    status: {
+    links: [],
+    isModalInitiated: false,
+    formFeedback: {
+      isSubmited: false,
       success: '',
       error: '',
     },

@@ -1,4 +1,4 @@
-const renderFeeds = (allStreams, i18nextInstance) => {
+const renderFeeds = (feeds, i18nextInstance) => {
   const feedsBox = document.querySelector('.feeds');
   const fragmentStructure = document.createElement('div');
   fragmentStructure.classList.add('card', 'border-0');
@@ -12,7 +12,7 @@ const renderFeeds = (allStreams, i18nextInstance) => {
   const feedsList = document.createElement('ul');
   feedsList.classList.add('list-group', 'border-0', 'rounded-0');
 
-  const feedsListItems = allStreams.map((feed) => {
+  const feedsListItems = feeds.map((feed) => {
     const title = document.createElement('h3');
     const element = document.createElement('li');
     const description = document.createElement('p');
@@ -33,7 +33,7 @@ const renderFeeds = (allStreams, i18nextInstance) => {
   feedsBox.appendChild(fragmentStructure);
 };
 
-const renderPosts = (currentPosts, readPosts, modalState, i18nextInstance) => {
+const renderPosts = (posts, readPosts, modalDOMEls, i18nextInstance) => {
   const {
     isInitiated,
     modal,
@@ -42,7 +42,7 @@ const renderPosts = (currentPosts, readPosts, modalState, i18nextInstance) => {
     modalButton,
     closeBtn,
     closeBtnSecond,
-  } = modalState;
+  } = modalDOMEls;
 
   const listBox = document.querySelector('.posts');
   const fragmentStructure = document.createElement('div');
@@ -57,23 +57,23 @@ const renderPosts = (currentPosts, readPosts, modalState, i18nextInstance) => {
   feedsTitle1.textContent = i18nextInstance.t('posts');
   fragmentStructure.querySelector('.card-body').appendChild(feedsTitle1);
 
-  const postsItems = currentPosts.map(([postHash, post]) => {
+  const postsItems = posts.map((post) => {
     const postItem = document.createElement('li');
     postItem.className = 'list-group-item d-flex justify-content-between align-items-start border-0 border-end-0';
 
     const link = document.createElement('a');
-    if (!readPosts.has(postHash)) link.classList.add('fw-bold');
+    if (!readPosts.has(post.id)) link.classList.add('fw-bold');
     link.href = post.link;
     link.textContent = post.title;
 
     const btn = document.createElement('button');
     btn.className = 'btn btn-outline-primary btn-sm';
-    btn.textContent = 'Просмотр';
+    btn.textContent = i18nextInstance.t('preview');
 
     btn.addEventListener('click', () => {
       link.classList.remove('fw-bold');
       link.classList.add('fw-normal');
-      readPosts.add(postHash);
+      readPosts.add(post.id);
 
       modalTitle.textContent = post.title;
       modalText.textContent = post.description;
@@ -105,36 +105,37 @@ const renderPosts = (currentPosts, readPosts, modalState, i18nextInstance) => {
   listBox.appendChild(fragmentStructure);
 };
 
-export const renderStatus = (status, { t }) => {
+export const renderFormFeedback = (formFeedback, { t }, { form, input }) => {
+  if (!formFeedback.isSubmited) return;
+
   const feedBack = document.querySelector('.feedback');
 
-  // console.log(status);
+  form.reset();
+  input.focus();
 
-  if (status.success) {
-    feedBack.textContent = t(status.success);
+  if (formFeedback.success) {
+    input.classList.remove('is-invalid');
+
+    feedBack.textContent = t(formFeedback.success);
     feedBack.classList.remove('text-danger');
     feedBack.classList.add('text-success');
+    formFeedback.isSubmited = false;
     return;
   }
 
-  feedBack.textContent = t(`errors.${status.error}`);
+  input.classList.add('is-invalid');
+  feedBack.textContent = t(`errors.${formFeedback.error}`);
   feedBack.classList.remove('text-success');
   feedBack.classList.add('text-danger');
+  formFeedback.isSubmited = false;
 };
 
-const renderContent = ({ streams, ui, status }, i18nextInstance) => {
-  const { rssStreams, readPosts } = streams;
-  const streamsValues = Object.values(rssStreams);
-  const allStreams = streamsValues;
-  const posts = [];
+const renderContent = ({ rssStreams, formFeedback }, DOMEls, i18nextInstance) => {
+  const { feeds, posts, readPosts } = rssStreams;
 
-  for (let i = streamsValues.length - 1; i >= 0; i -= 1) {
-    posts.push(...Object.entries(streamsValues[i].items));
-  }
-
-  renderFeeds(allStreams, i18nextInstance);
-  renderPosts(posts, readPosts, ui.modalUI, i18nextInstance);
-  renderStatus(status, i18nextInstance);
+  renderFeeds(feeds, i18nextInstance);
+  renderPosts(posts, readPosts, DOMEls, i18nextInstance);
+  renderFormFeedback(formFeedback, i18nextInstance, DOMEls);
 };
 
 export default renderContent;

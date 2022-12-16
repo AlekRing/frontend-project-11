@@ -21,3 +21,7 @@ export const getLink = (url) => {
   newUrl.searchParams.set('disableCache', true);
   return newUrl.toString();
 };
+
+export const isAlreadyExists = (hash, feeds) => !!feeds.find((feed) => feed.id === hash);
+
+export const validateUrl = (url, urlValidationScheme) => urlValidationScheme.validate(url);
