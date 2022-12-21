@@ -1,4 +1,4 @@
-const renderFeeds = (feeds, i18nextInstance) => {
+export const renderFeeds = (feeds, i18next) => {
   const feedsBox = document.querySelector('.feeds');
   const fragmentStructure = document.createElement('div');
   fragmentStructure.classList.add('card', 'border-0');
@@ -6,7 +6,7 @@ const renderFeeds = (feeds, i18nextInstance) => {
 
   const feedsTitle = document.createElement('h2');
   feedsTitle.classList.add('card-title', 'h4');
-  feedsTitle.textContent = i18nextInstance.t('feeds');
+  feedsTitle.textContent = i18next.t('feeds');
   fragmentStructure.querySelector('.card-body').appendChild(feedsTitle);
 
   const feedsList = document.createElement('ul');
@@ -33,17 +33,7 @@ const renderFeeds = (feeds, i18nextInstance) => {
   feedsBox.appendChild(fragmentStructure);
 };
 
-const renderPosts = (posts, readPosts, modalDOMEls, i18nextInstance) => {
-  const {
-    isInitiated,
-    modal,
-    modalTitle,
-    modalText,
-    modalButton,
-    closeBtn,
-    closeBtnSecond,
-  } = modalDOMEls;
-
+export const renderPosts = ({ posts, readPosts }, i18next) => {
   const listBox = document.querySelector('.posts');
   const fragmentStructure = document.createElement('div');
   fragmentStructure.classList.add('card', 'border-0');
@@ -54,7 +44,7 @@ const renderPosts = (posts, readPosts, modalDOMEls, i18nextInstance) => {
 
   const feedsTitle1 = document.createElement('h2');
   feedsTitle1.classList.add('card-title', 'h4');
-  feedsTitle1.textContent = i18nextInstance.t('posts');
+  feedsTitle1.textContent = i18next.t('posts');
   fragmentStructure.querySelector('.card-body').appendChild(feedsTitle1);
 
   const postsItems = posts.map((post) => {
@@ -65,33 +55,12 @@ const renderPosts = (posts, readPosts, modalDOMEls, i18nextInstance) => {
     if (!readPosts.has(post.id)) link.classList.add('fw-bold');
     link.href = post.link;
     link.textContent = post.title;
+    link.id = post.id;
 
     const btn = document.createElement('button');
     btn.className = 'btn btn-outline-primary btn-sm';
-    btn.textContent = i18nextInstance.t('preview');
-
-    btn.addEventListener('click', () => {
-      link.classList.remove('fw-bold');
-      link.classList.add('fw-normal');
-      readPosts.add(post.id);
-
-      modalTitle.textContent = post.title;
-      modalText.textContent = post.description;
-      modalButton.href = post.link;
-
-      if (!isInitiated) {
-        const closeModal = () => {
-          modal.style = 'display: none;';
-          modal.classList.remove('show');
-        };
-
-        closeBtn.addEventListener('click', closeModal);
-        closeBtnSecond.addEventListener('click', closeModal);
-      }
-
-      modal.style = 'display: block;';
-      modal.classList.add('show');
-    });
+    btn.textContent = i18next.t('preview');
+    btn.setAttribute('data-post-id', post.id);
 
     postItem.append(link);
     postItem.append(btn);
@@ -105,37 +74,48 @@ const renderPosts = (posts, readPosts, modalDOMEls, i18nextInstance) => {
   listBox.appendChild(fragmentStructure);
 };
 
-export const renderFormFeedback = (formFeedback, { t }, { form, input }) => {
-  if (!formFeedback.isSubmited) return;
-
+export const rendeFormFeedback = ({ error, appStatus }, { form, input }, i18next) => {
   const feedBack = document.querySelector('.feedback');
 
   form.reset();
   input.focus();
 
-  if (formFeedback.success) {
-    input.classList.remove('is-invalid');
+  if (appStatus === 'submitting') return;
 
-    feedBack.textContent = t(formFeedback.success);
-    feedBack.classList.remove('text-danger');
-    feedBack.classList.add('text-success');
-    formFeedback.isSubmited = false;
+  if (appStatus === 'invalid') {
+    input.classList.add('is-invalid');
+    feedBack.textContent = i18next.t(`errors.${error}`);
+    feedBack.classList.remove('text-success');
+    feedBack.classList.add('text-danger');
     return;
   }
 
-  input.classList.add('is-invalid');
-  feedBack.textContent = t(`errors.${formFeedback.error}`);
-  feedBack.classList.remove('text-success');
-  feedBack.classList.add('text-danger');
-  formFeedback.isSubmited = false;
+  if (appStatus === 'success') {
+    input.classList.remove('is-invalid');
+    feedBack.textContent = i18next.t('success');
+    feedBack.classList.remove('text-danger');
+    feedBack.classList.add('text-success');
+  }
 };
 
-const renderContent = ({ rssStreams, formFeedback }, DOMEls, i18nextInstance) => {
-  const { feeds, posts, readPosts } = rssStreams;
+export const renderModal = (state, id, domEls) => {
+  const { modalTitle, modalText, modalButton, modal } = domEls;
 
-  renderFeeds(feeds, i18nextInstance);
-  renderPosts(posts, readPosts, DOMEls, i18nextInstance);
-  renderFormFeedback(formFeedback, i18nextInstance, DOMEls);
+  if (!id) {
+    modal.style = 'display: none;';
+    modal.classList.remove('show');
+    return;
+  }
+
+  const link = document.getElementById(id);
+  const post = state.rssStreams.posts.find((p) => p.id === Number(id));
+
+  link.classList.remove('fw-bold');
+  link.classList.add('fw-normal');
+
+  modalTitle.textContent = post.title;
+  modalText.textContent = post.description;
+  modalButton.href = post.link;
+  modal.style = 'display: block;';
+  modal.classList.add('show');
 };
-
-export default renderContent;

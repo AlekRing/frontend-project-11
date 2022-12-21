@@ -22,6 +22,6 @@ export const getLink = (url) => {
   return newUrl.toString();
 };
 
-export const isAlreadyExists = (hash, feeds) => !!feeds.find((feed) => feed.id === hash);
+export const isAlreadyExists = (link, links) => links.indexOf(link) !== -1;
 
 export const validateUrl = (url, urlValidationScheme) => urlValidationScheme.validate(url);
