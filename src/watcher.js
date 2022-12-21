@@ -5,7 +5,7 @@ const watchState = (state, domEls, i18next) => {
   const watchedState = onChange(state, (path, value) => {
     switch (path) {
       case 'rssStreams.posts':
-        renderPosts(state, i18next);
+        renderPosts(state.rssStreams, i18next);
         break;
       case 'rssStreams.feeds':
         renderFeeds(value, i18next);
