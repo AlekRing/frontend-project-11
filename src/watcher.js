@@ -1,5 +1,7 @@
 import onChange from 'on-change';
-import { renderFeeds, renderPosts, rendeFormFeedback, renderModal } from './renderContent';
+import {
+  renderFeeds, renderPosts, rendeFormFeedback, renderModal,
+} from './renderContent';
 
 const watchState = (state, domEls, i18next) => {
   const watchedState = onChange(state, (path, value) => {

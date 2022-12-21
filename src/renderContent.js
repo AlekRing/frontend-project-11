@@ -99,7 +99,9 @@ export const rendeFormFeedback = ({ error, appStatus }, { form, input }, i18next
 };
 
 export const renderModal = (state, id, domEls) => {
-  const { modalTitle, modalText, modalButton, modal } = domEls;
+  const {
+    modalTitle, modalText, modalButton, modal,
+  } = domEls;
 
   if (!id) {
     modal.style = 'display: none;';
